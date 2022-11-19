@@ -1,47 +1,70 @@
-const pokemonList = document.getElementById('pokemonList')
-const loadMoreButton = document.getElementById('loadMoreButton')
 
-const maxRecords = 151
-const limit = 10
+const listaPokemon = document.getElementById('list-pokemons');
+const btnLoad = document.getElementById('loadMoreBtn');
+let root = document.querySelector(':root');
+
+const maxRecords = 151;
+const limit = 10;
 let offset = 0;
 
-function convertPokemonToLi(pokemon) {
-    return `
-        <li class="pokemon ${pokemon.type}">
-            <span class="number">#${pokemon.number}</span>
-            <span class="name">${pokemon.name}</span>
-
-            <div class="detail">
-                <ol class="types">
-                    ${pokemon.types.map((type) => `<li class="type ${type}">${type}</li>`).join('')}
-                </ol>
-
-                <img src="${pokemon.photo}"
-                     alt="${pokemon.name}">
-            </div>
-        </li>
-    `
-}
-
 function loadPokemonItens(offset, limit) {
-    pokeApi.getPokemons(offset, limit).then((pokemons = []) => {
-        const newHtml = pokemons.map(convertPokemonToLi).join('')
-        pokemonList.innerHTML += newHtml
-    })
+	pokeAPI.getPokemons(offset, limit).then((pokemonList = []) => {
+
+		const newHtml = pokemonList.map((pokemon) => `
+			<li  class="pokemon ${pokemon.type}">
+				<div class="number" style="color:${colours[pokemon.type]};">#${pokemon.number}</div>
+				<div class="name" style="color:${colours[pokemon.type]};"> 
+					<span class="magic-text"> ${pokemon.name} </span>
+				</div>
+				<div class="image" 
+					style="background-image: url(${pokemon.photo});">
+				</div>
+				<div class="about conteudo">
+					<ol class="list_types">
+						${pokemon.types.map((type) => `<li><img src="${icon[type]}" alt="${type}"></li>`).join('')}
+					</ol>
+					<div class="flavor_text">
+						<p>
+							${pokemon.flavorText}
+						</p>
+						<p>
+							Height: ${pokemon.height/10} m
+						</p>
+						<p>
+							Weight: ${pokemon.weight/10} kg
+						</p>
+					</div>
+				</div>
+			</li>`).join('')
+		
+			listaPokemon.innerHTML += newHtml;
+			for (const child of listaPokemon.children) {
+				VanillaTilt.init(child,{
+					glare: true,
+					"max-glare": 1
+				});			
+			}
+			
+	})
 }
 
-loadPokemonItens(offset, limit)
+loadPokemonItens(offset, limit);
 
-loadMoreButton.addEventListener('click', () => {
-    offset += limit
-    const qtdRecordsWithNexPage = offset + limit
+btnLoad.addEventListener('click', () => {
 
-    if (qtdRecordsWithNexPage >= maxRecords) {
-        const newLimit = maxRecords - offset
-        loadPokemonItens(offset, newLimit)
+	offset += limit;
+	const qtdRecord = offset + limit;
 
-        loadMoreButton.parentElement.removeChild(loadMoreButton)
-    } else {
-        loadPokemonItens(offset, limit)
-    }
+	if (qtdRecord >= maxRecords) {
+
+		const newLimit = maxRecords - offset;
+
+		loadPokemonItens(offset, newLimit);
+
+		btnLoad.disabled = "true";
+		btnLoad.classList.add("disabled")
+	} else {
+		loadPokemonItens(offset, limit);
+
+	}
 })
